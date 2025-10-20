@@ -4,7 +4,7 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "domishot"
-version = "0.1.0"
+version = "0.1.2"
 description = "Capture a specific DOM element from any web page as an image (Playwright-first, Selenium fallback)."
 readme = { file = "README.md", content-type = "text/markdown" }
 requires-python = ">=3.9"
@@ -23,8 +23,6 @@ selenium  = ["selenium>=4.12", "webdriver-manager>=4.0"]
 
 [project.scripts]
 domishot = "domishot.cli:main"
-# Optional back-compat alias (keep if you want the old command to still work):
-webshot = "domishot.cli:main"
 
 [project.urls]
 Homepage = "https://github.com/nusiko/domishot"
