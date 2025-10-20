@@ -27,9 +27,10 @@ domishot = "domishot.cli:main"
 webshot = "domishot.cli:main"
 
 [project.urls]
-Homepage = "https://example.com/domishot"
-Repository = "https://github.com/your-user-or-org/domishot"
-Issues = "https://github.com/your-user-or-org/domishot/issues"
+Homepage = "https://github.com/nusiko/domishot"
+Repository = "https://github.com/nusiko/domishot"
+Issues = "https://github.com/nusiko/domishot/issues"
+Changelog = "https://github.com/nusiko/domishot/releases"
 
 [tool.setuptools]
 package-dir = {"" = "src"}
