@@ -1,4 +1,4 @@
-WEBSHOT — Capture a specific DOM element from any web page as an image
+domishot — capture a specific DOM element from any web page as an image
 ================================================================================
 
 Overview
