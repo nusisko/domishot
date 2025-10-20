@@ -1,0 +1,255 @@
+Metadata-Version: 2.4
+Name: domishot
+Version: 0.1.0
+Summary: Capture a specific DOM element from any web page as an image (Playwright-first, Selenium fallback).
+Author: Eric Moral
+License-Expression: MIT
+Project-URL: Homepage, https://example.com/domishot
+Project-URL: Repository, https://github.com/your-user-or-org/domishot
+Project-URL: Issues, https://github.com/your-user-or-org/domishot/issues
+Keywords: screenshot,playwright,selenium,automation,web
+Classifier: Programming Language :: Python :: 3
+Classifier: Operating System :: OS Independent
+Requires-Python: >=3.9
+Description-Content-Type: text/markdown
+Provides-Extra: playwright
+Requires-Dist: playwright>=1.45; extra == "playwright"
+Provides-Extra: selenium
+Requires-Dist: selenium>=4.12; extra == "selenium"
+Requires-Dist: webdriver-manager>=4.0; extra == "selenium"
+
+WEBSHOT — Capture a specific DOM element from any web page as an image
+================================================================================
+
+Overview
+--------
+domishot loads a web page in a headless browser, finds a DOM element by CSS
+selector, and saves a PNG image of JUST that element. It prefers Playwright
+for excellent rendering quality and falls back to Selenium automatically if
+Playwright is not available.
+
+Typical use cases: dashboards, reporting, bots, alerts/monitors, and 
+"just give me that card from the page" tasks.
+
+
+Key Features
+------------
+• Element-only screenshots using a CSS selector (no manual cropping).
+• Works with dynamic, JS-heavy pages.
+• Best-effort cookie/consent dismissal (common patterns like OneTrust).
+• Hi-DPI output via device pixel ratio (Playwright) for crisp text.
+• Both CLI and Python API.
+• Optional extras: install with Playwright or Selenium (or both).
+
+
+Supported Environments
+----------------------
+• Python 3.9+
+• Linux, macOS, Windows (headless)
+• Backends
+  - Playwright (Chromium) — recommended for fidelity
+  - Selenium (Chrome/Chromium via webdriver-manager) — simpler to start
+
+Note: For Selenium you still need a Chrome/Chromium browser installed.
+Playwright downloads its own browser binaries with:  playwright install chromium
+
+
+Installation
+------------
+Choose ONE backend to start (you can install both).
+
+Option A — Selenium (simpler to start)
+    pip install "domishot[selenium]"
+
+Option B — Playwright (recommended quality)
+    pip install "domishot[playwright]"
+    playwright install chromium
+
+Zsh users: always quote extras, e.g. "domishot[selenium]" to avoid globbing.
+
+
+Quick Start
+-----------
+CLI
+    domishot "https://www.omie.es/es/spot-hoy" "div.market-data-block.average" -o omie.png --backend selenium
+
+Python
+    from domishot import capture, CaptureOptions
+    capture(
+        url="https://www.omie.es/es/spot-hoy",
+        selector="div.market-data-block.average",
+        out="omie.png",
+        opts=CaptureOptions(backend="auto", device_scale_factor=3)  # sharp text
+    )
+
+Tip: backend="auto" will use Playwright if available, otherwise Selenium.
+
+
+Usage (CLI)
+-----------
+Syntax
+    domishot URL SELECTOR --out PATH [--backend auto|playwright|selenium]
+                         [--width 1400] [--height 1000] [--dpr 2]
+                         [--locale es-ES] [--no-accept-cookies]
+                         [--timeout 30000] [--extra-wait 400]
+
+Arguments
+    URL                Page to load.
+    SELECTOR           CSS selector for the target element (e.g., #id, .card, #main > .widget).
+    --out/-o           Output PNG path (e.g., snippet.png).
+    --backend          auto (default), playwright, or selenium.
+    --width/--height   Viewport size in pixels.
+    --dpr              Device pixel ratio (Playwright only). Use 2–3 for crisp text.
+    --locale           Browser locale (default es-ES).
+    --no-accept-cookies  Disable cookie auto-accept (best-effort is on by default).
+    --timeout          Playwright wait timeout in ms (default 30000).
+    --extra-wait       Extra settle wait after scroll/render in ms (default 400).
+
+Examples
+    # OMIE card (narrow selector)
+    domishot "https://www.omie.es/es/spot-hoy" "#block-prices-and-volumes" -o omie.png --backend selenium
+
+    # OMIE block (wider container)
+    domishot "https://www.omie.es/es/spot-hoy" "div.market-data-block.average" -o omie.png
+
+    # Force Playwright & Hi-DPI output
+    domishot "https://example.com" ".kpi" -o kpi.png --backend playwright --dpr 3
+
+
+Usage (Python API)
+------------------
+Example
+    from domishot import capture, CaptureOptions
+
+    opts = CaptureOptions(
+        backend="auto",            # or "playwright" / "selenium"
+        viewport=(1400, 1000),
+        device_scale_factor=2,     # Playwright-only
+        wait_until="networkidle",  # Playwright: load|domcontentloaded|networkidle
+        timeout_ms=30000,
+        locale="es-ES",
+        accept_cookies=True,
+        extra_wait_ms=400,
+    )
+
+    capture("https://example.com", "#main > .card", "card.png", opts)
+
+
+Performance & Quality Tips
+--------------------------
+• Prefer Playwright for best text rendering; set --dpr 2 or 3 for Hi-DPI.
+• Increase --extra-wait if the element animates in or lazy-loads (try 800–1200 ms).
+• Upsize the viewport if the element is wider/taller than default.
+• If a site behaves oddly in headless mode, try the other backend.
+• For very long blocks, ensure CSS doesn’t clip overflow; Playwright's element
+  screenshot can capture outside the viewport, but some CSS effects may hide content.
+
+
+Troubleshooting
+---------------
+“ No supported backend available ”
+    Install an extra:
+        pip install "domishot[selenium]"
+    or
+        pip install "domishot[playwright]" && playwright install chromium
+
+zsh error:  no matches found: .[selenium]
+    Quote extras with zsh:
+        pip install -e ".[selenium]"
+
+Build error: package directory 'src/domishot' does not exist
+    Ensure the project layout is:
+        pyproject.toml
+        README.md
+        src/domishot/__init__.py
+        src/domishot/core.py
+        src/domishot/cli.py
+
+Dependency conflicts (e.g., urllib3)
+    Use a dedicated virtual environment for domishot, or upgrade conflicting libraries.
+
+Dynamic content never appears
+    Increase --extra-wait and ensure you wait for the element; for Playwright, the
+    tool already waits for visibility. Consider switching to Playwright if using Selenium.
+
+Consent banner not dismissed
+    Pass --no-accept-cookies and implement custom handling in a tiny wrapper, or
+    extend the acceptance selectors in core.py.
+
+
+Development
+-----------
+Editable install (for contributing)
+    pip install -e ".[selenium]"
+    # or: pip install -e ".[playwright]" && playwright install chromium
+
+Local smoke test
+    domishot "https://www.omie.es/es/spot-hoy" "div.market-data-block.average" -o omie.png --backend selenium
+
+Build distributions (wheel + sdist)
+    python -m pip install --upgrade build
+    python -m build
+    # outputs in ./dist/
+
+Publish (TestPyPI first)
+    python -m pip install --upgrade twine
+    twine upload --repository testpypi dist/*
+    # then try installing from TestPyPI
+    pip install -i https://test.pypi.org/simple/ "domishot[selenium]"
+
+Release to PyPI
+    twine upload dist/*
+
+Versioning
+    Bump the version in pyproject.toml before each release (e.g., 0.1.1).
+
+
+API Reference
+-------------
+domishot.capture(url: str, selector: str, out: str, opts: Optional[CaptureOptions] = None) -> None
+    Capture a single DOM element identified by selector and save it to out.
+
+domishot.CaptureOptions
+    backend              "auto" | "playwright" | "selenium"
+    viewport             (width, height)
+    device_scale_factor  int (Playwright only)
+    wait_until           "load" | "domcontentloaded" | "networkidle" (Playwright only)
+    timeout_ms           int
+    locale               e.g., "es-ES"
+    accept_cookies       bool
+    extra_wait_ms        int
+
+
+Security
+--------
+• Avoid capturing authenticated pages that contain sensitive data unless you
+  control the environment and storage.
+• Rotate or sandbox credentials if you add login flows around domishot.
+
+
+Roadmap
+-------
+• Optional coordinate-based cropping helper.
+• Built-in iframe/shadow-root helpers.
+• PNG/JPEG/WebP output selection and quality controls.
+• Save HTML snapshot alongside PNG for reproducibility.
+
+
+FAQ
+---
+Q: Can I capture the whole page?
+A: Not built-in; domishot focuses on element screenshots. You can fork and
+   use Playwright's full_page=True, or take a full-page shot and crop via Pillow.
+
+Q: Will it work behind a login?
+A: Yes, but you need to add login steps (set cookies or automate a login) in your
+   code before calling capture().
+
+Q: Why is the image blurry with Selenium?
+A: Selenium does not support device pixel ratio the same way as Playwright. Try
+   a bigger viewport or use Playwright with a higher DPR (e.g., --dpr 3).
+
+
+License
+-------
+MIT © You/Your Organization

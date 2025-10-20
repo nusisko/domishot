@@ -1,0 +1,3 @@
+[console_scripts]
+domishot = domishot.cli:main
+webshot = domishot.cli:main
